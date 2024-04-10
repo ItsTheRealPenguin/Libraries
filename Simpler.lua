@@ -6,6 +6,9 @@ local UserInputService = game:GetService("UserInputService")
 
 
 --// Vars
+local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
+
 local Textures = {
     ["Panel"] = "http://www.roblox.com/asset/?id=17084007357",
     ["Background"] = "http://www.roblox.com/asset/?id=17084005858",
@@ -19,6 +22,10 @@ local Textures = {
 
 
 --// Functions
+local function Draggable(Object: Frame)
+    Object.Active = true
+    Object.Draggable = true
+end
 local function GetParent()
     return (RunService:IsStudio() and Players.LocalPlayer:WaitForChild("PlayerGui"))or gethui()
 end
@@ -158,6 +165,8 @@ function library:Window(_title: string, _subtitle: string, _keybind: Enum.KeyCod
 
     Window.ImageColor3 = Color3.fromRGB(20, 20, 20)
     Window.BackgroundTransparency = 1
+
+    Draggable(Window)
 
     Side.Name = "Side"
     Side.AnchorPoint = Vector2.new(0, 0.5)
