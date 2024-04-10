@@ -22,9 +22,27 @@ local Textures = {
 
 
 --// Functions
-local function Draggable(Object: Frame)
-    Object.Active = true
-    Object.Draggable = true
+local function Draggable(Frame: Frame)
+    local position = nil
+    local isHolding, inBody = false, false
+
+
+    Mouse.Move:Connect(function()
+        if (isHolding) then
+            position = UDim2.fromScale(
+                ((Mouse.X/ Mouse.ViewSizeX) - (Frame.AbsolutePosition.X / 1000/10)),
+                ((Mouse.Y/ Mouse.ViewSizeY) - (Frame.AbsolutePosition.Y / 1000/10))
+            )
+            TweenService:Create(Frame, TweenInfo.new(0.5), {
+                Position = position
+            }):Play()
+        end
+    end)
+    Mouse.Button1Down:Connect(function() isHolding = (inBody and true)or false end)
+    Mouse.Button1Up:Connect(function() isHolding = false end)
+
+    Frame.MouseEnter:Connect(function() inBody = true end)
+    Frame.MouseLeave:Connect(function() inBody = false end)
 end
 local function GetParent()
     return (RunService:IsStudio() and Players.LocalPlayer:WaitForChild("PlayerGui"))or gethui()
@@ -153,6 +171,7 @@ function library:Window(_title: string, _subtitle: string, _keybind: Enum.KeyCod
     --// Element properties
     UI.Name = "A-REAL-LIBRARY"
     UI.Enabled = (type(Hidden) == "boolean" and Hidden)or class.Settings.Hidden
+    UI.DisplayOrder = 10^10
     UI.IgnoreGuiInset = true
     UI.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
