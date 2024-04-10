@@ -22,27 +22,60 @@ local Textures = {
 
 
 --// Functions
-local function Draggable(Frame: Frame)
-    local position = nil
-    local isHolding, inBody = false, false
+function Draggable(Object)
+    local dragInput	= nil
+    local dragStart	= nil
+    local startPos = nil
+    local Dragging = false
+    local preparingToDrag = false
+    
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        
+        TweenService:Create(Object, TweenInfo.new(0.250), {
+            Position = position
+        }):Play()
 
+        return position
+    end
+    
 
-    Mouse.Move:Connect(function()
-        if (isHolding) then
-            position = UDim2.fromScale(
-                ((Mouse.X/ Mouse.ViewSizeX) - (Frame.AbsolutePosition.X / 1000/10)),
-                ((Mouse.Y/ Mouse.ViewSizeY) - (Frame.AbsolutePosition.Y / 1000/10))
-            )
-            TweenService:Create(Frame, TweenInfo.new(0.5), {
-                Position = position
-            }):Play()
+    Object.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            preparingToDrag = true
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End and (Dragging or preparingToDrag) then
+                    Dragging = false
+                    preparingToDrag = false
+                end
+            end)
         end
     end)
-    Mouse.Button1Down:Connect(function() isHolding = (inBody and true)or false end)
-    Mouse.Button1Up:Connect(function() isHolding = false end)
 
-    Frame.MouseEnter:Connect(function() inBody = true end)
-    Frame.MouseLeave:Connect(function() inBody = false end)
+    Object.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if Object.Parent == nil then
+            return
+        end
+        if preparingToDrag then
+            preparingToDrag = false
+
+            Dragging	= true
+            dragStart = input.Position
+            startPos = Object.Position
+        end
+        if input == dragInput and Dragging then
+            update(input)
+        end
+    end)
 end
 local function GetParent()
     return (RunService:IsStudio() and Players.LocalPlayer:WaitForChild("PlayerGui"))or gethui()
